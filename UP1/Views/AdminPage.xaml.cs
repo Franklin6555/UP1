@@ -31,7 +31,11 @@ namespace UP1.Views
             foreach (var user in users)
             {
                 string role = user.Role?.Name ?? "User";
-                lbUsers.Items.Add($"{user.DisplayName} ({user.Login}) — {role}");
+                lbUsers.Items.Add(new ListBoxItem
+                {
+                    Content = $"{user.DisplayName} ({user.Login}) — {role}",
+                    Tag = user.Id
+                });
             }
         }
 
@@ -57,7 +61,6 @@ namespace UP1.Views
                 return;
             }
 
-            // Получаем выбранного пользователя (упрощённо по тексту)
             string selectedText = lbAuthorRequests.SelectedItem.ToString();
             string login = selectedText.Split('(')[1].Split(')')[0];
 
@@ -98,9 +101,37 @@ namespace UP1.Views
             }
         }
 
+        // СМЕНА РОЛИ
         private void BtnChangeRole_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Функция смены роли будет реализована позже.", "Информация");
+            if (lbUsers.SelectedItem == null)
+            {
+                MessageBox.Show("Сначала выберите пользователя из списка!", "Предупреждение");
+                return;
+            }
+
+            if (cmbNewRole.SelectedItem == null)
+            {
+                MessageBox.Show("Выберите новую роль!", "Предупреждение");
+                return;
+            }
+
+            string newRole = (cmbNewRole.SelectedItem as ComboBoxItem)?.Content.ToString();
+
+            var selectedItem = lbUsers.SelectedItem as ListBoxItem;
+            int userId = (int)selectedItem.Tag;
+
+            bool success = App.DataService.ChangeUserRole(userId, newRole);
+
+            if (success)
+            {
+                MessageBox.Show($"Роль успешно изменена на {newRole}!", "Успешно");
+                LoadUsers();
+            }
+            else
+            {
+                MessageBox.Show("Не удалось изменить роль пользователя.", "Ошибка");
+            }
         }
 
         private void BtnResetPassword_Click(object sender, RoutedEventArgs e)

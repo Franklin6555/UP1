@@ -15,6 +15,11 @@
             <TabItem Header="👥 Пользователи">
                 <Grid>
                     <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal">
+                        <ComboBox x:Name="cmbNewRole" Width="180" Height="35" Margin="0,0,10,0">
+                            <ComboBoxItem Content="User" IsSelected="True"/>
+                            <ComboBoxItem Content="Author"/>
+                            <ComboBoxItem Content="Administrator"/>
+                        </ComboBox>
                         <Button Content="Сменить роль" Width="140" Height="35" Margin="5" Click="BtnChangeRole_Click"/>
                         <Button Content="Сбросить пароль" Width="140" Height="35" Margin="5" Click="BtnResetPassword_Click"/>
                         <Button Content="Заморозить" Width="140" Height="35" Margin="5" Click="Button_Click"/>

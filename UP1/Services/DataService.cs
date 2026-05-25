@@ -119,6 +119,17 @@ namespace UP1.Services
             db.SaveChanges();
             return true;
         }
+        public bool ChangeUserRole(int userId, string newRoleName)
+        {
+            var user = db.Users.Find(userId);
+            if (user == null) return false;
 
+            var newRole = db.Roles.FirstOrDefault(r => r.Name == newRoleName);
+            if (newRole == null) return false;
+
+            user.RoleId = newRole.Id;
+            db.SaveChanges();
+            return true;
+        }
     }
 }
