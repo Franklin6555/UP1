@@ -17,5 +17,11 @@ namespace UP1.Models
         public string FreezeReason { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        // Новые поля для заявки на автора
+        public bool HasAuthorRequest { get; set; } = false;
+        public string AuthorRequestStatus { get; set; } = "None"; // None, Pending, Approved, Rejected
+        public string AuthorRequestReason { get; set; }
+        public DateTime? AuthorRequestDate { get; set; }
     }
 }

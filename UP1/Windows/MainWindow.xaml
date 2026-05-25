@@ -5,15 +5,14 @@
         Height="700" Width="1200"
         WindowStartupLocation="CenterScreen"
         Background="#1E1E1E"
-        WindowStyle="None"
         AllowsTransparency="False">
 
-    <Grid>
+    <Grid Margin="0,0,0,0">
         <!-- Sidebar -->
         <Grid Width="70" HorizontalAlignment="Left" Background="#252526">
             <StackPanel Margin="0,20,0,0">
                 <!-- Логотип -->
-                <TextBlock Text="📖" FontSize="32" HorizontalAlignment="Center" Margin="0,0,0,30"/>
+                <TextBlock Text="📖" FontSize="32" HorizontalAlignment="Center" Margin="0,0,0,30" Foreground="White"/>
 
                 <!-- Кнопки меню -->
                 <Button x:Name="btnCatalog" Height="60" Click="BtnCatalog_Click" ToolTip="Каталог книг">
@@ -43,7 +42,7 @@
             </StackPanel>
 
             <!-- Кнопка выхода внизу -->
-            <Button Content="⏻" 
+            <Button Content="X" 
                     Click="BtnLogout_Click"
                     Width="50" Height="50"
                     HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,20"

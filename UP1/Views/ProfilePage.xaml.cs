@@ -14,7 +14,38 @@ namespace UP1.Views
         }
         private void BtnApplyAuthor_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Заявка на роль Автора отправлена администратору!", "Успешно");
+            if (MainWindow.CurrentUser == null) return;
+
+            if (MainWindow.CurrentUser.HasAuthorRequest)
+            {
+                MessageBox.Show("Вы уже подавали заявку.\nОжидайте решения администратора.",
+                               "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var result = MessageBox.Show(
+                "Вы действительно хотите подать заявку на роль Автора?",
+                "Подтверждение",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                bool success = App.DataService.SubmitAuthorRequest(MainWindow.CurrentUser.Id,
+                    "Хочу публиковать свои книги"); // стандартная причина
+
+                if (success)
+                {
+                    MessageBox.Show("Заявка на роль Автора успешно отправлена!\nОжидайте решения администратора.",
+                                   "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
+                    LoadUserInfo(); // обновляем информацию на странице
+                }
+                else
+                {
+                    MessageBox.Show("Не удалось отправить заявку. Возможно, вы уже отправляли её ранее.",
+                                   "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
         }
         private void LoadUserInfo()
         {

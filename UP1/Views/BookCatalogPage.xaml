@@ -25,7 +25,7 @@
 
                 <!-- Сортировка -->
                 <ComboBox x:Name="cmbSort" Width="200" Height="38" 
-                          Background="#3C3C3C" Foreground="White" Margin="0,0,15,0">
+                          Background="#3C3C3C" Margin="0,0,15,0">
                     <ComboBoxItem Content="По названию (А-Я)" IsSelected="True"/>
                     <ComboBoxItem Content="По названию (Я-А)"/>
                     <ComboBoxItem Content="По оценке (высокая)"/>

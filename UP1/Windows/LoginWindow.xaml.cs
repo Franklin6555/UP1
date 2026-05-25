@@ -46,7 +46,16 @@ namespace UP1.Windows
 
         private void BtnRegister_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Регистрация будет добавлена позже.\n\nТестовые аккаунты:\nadmin / admin123\nauthor / author123\nuser / user123");
+            MessageBox.Show("Регистрация будет добавлена позже.\n\nТестовые аккаунты:\nadmin / admin_password\nauthor / author_password\nuser / user_password");
+
+            RegisterWindow registerWindow = new RegisterWindow();
+
+            if (registerWindow.ShowDialog() == true)
+            {
+                // После успешной регистрации можно автоматически войти, или просто очистить поля
+                txtLogin.Text = "";
+                txtPassword.Password = "";
+            }
         }
     }
 }
