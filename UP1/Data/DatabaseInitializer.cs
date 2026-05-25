@@ -53,8 +53,6 @@ namespace UP1.Data
 
                 context.SaveChanges();
             }
-
-            base.Seed(context);
         }
     }
 }
