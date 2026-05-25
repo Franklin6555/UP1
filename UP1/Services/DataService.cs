@@ -13,7 +13,7 @@ namespace UP1.Services
 
         public DataService()
         {
-            SeedTestData();   // Принудительно создаём тестовых пользователей
+            // SeedTestData();   // Принудительно создаём тестовых пользователей
         }
 
         private void SeedTestData()
