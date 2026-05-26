@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using UP1.Models;
 using UP1.Services;
 using UP1.Windows;
@@ -9,78 +12,107 @@ namespace UP1.Views
 {
     public partial class BookListsPage : Page
     {
-        private string currentShelf = "В планах";
+        private string currentStatus = "В планах"; // статус по умолчанию
 
         public BookListsPage()
         {
             InitializeComponent();
-            InitializeSortComboBox();
-            LoadShelf("В планах");
+            LoadCurrentShelf();
         }
 
-        private void InitializeSortComboBox()
+        private void LoadCurrentShelf()
         {
-            cmbSortLists.Items.Clear();
-            cmbSortLists.Items.Add("По названию (А-Я)");
-            cmbSortLists.Items.Add("По названию (Я-А)");
-            cmbSortLists.Items.Add("По оценке (высокая)");
-            cmbSortLists.Items.Add("По оценке (низкая)");
-            cmbSortLists.SelectedIndex = 0;
-        }
+            if (MainWindow.CurrentUser == null) return;
 
-        private void LoadShelf(string shelf)
-        {
-            currentShelf = shelf;
-            var user = MainWindow.CurrentUser;
-            if (user == null) return;
-
-            var books = App.DataService.GetBooksOnShelf(user.Id, shelf);
+            var books = App.DataService.GetBooksOnShelf(MainWindow.CurrentUser.Id, currentStatus);
             DisplayBooks(books);
         }
 
         private void DisplayBooks(List<Book> books)
         {
-            listsBooksPanel.Children.Clear();
+            booksPanel.Children.Clear();
 
             foreach (var book in books)
             {
                 var card = CreateBookCard(book);
-                listsBooksPanel.Children.Add(card);
+                booksPanel.Children.Add(card);
             }
         }
 
         private Border CreateBookCard(Book book)
         {
-            var border = new Border
+            Border border = new Border
             {
                 Width = 170,
-                Height = 260,
-                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(45, 45, 48)),
+                Height = 255,
+                Background = new SolidColorBrush(Color.FromRgb(45, 45, 45)),
                 CornerRadius = new CornerRadius(10),
-                Margin = new Thickness(12),
-                Cursor = System.Windows.Input.Cursors.Hand
+                Margin = new Thickness(8),
+                Cursor = Cursors.Hand
             };
 
-            var stack = new StackPanel { Margin = new Thickness(10) };
+            StackPanel panel = new StackPanel { Margin = new Thickness(10) };
 
-            var cover = new TextBlock { Text = book.CoverPath ?? "📖", FontSize = 60, HorizontalAlignment = HorizontalAlignment.Center };
-            var title = new TextBlock { Text = book.Title, FontWeight = FontWeights.Bold, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center, Foreground = System.Windows.Media.Brushes.White };
-            var author = new TextBlock { Text = book.Author?.DisplayName ?? "Неизвестен", TextAlignment = TextAlignment.Center, Foreground = System.Windows.Media.Brushes.LightGray };
+            TextBlock cover = new TextBlock { Text = book.CoverPath ?? "📖", FontSize = 65, HorizontalAlignment = HorizontalAlignment.Center };
+            TextBlock title = new TextBlock { Text = book.Title, FontWeight = FontWeights.Bold, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 10, 0, 5) };
+            TextBlock author = new TextBlock { Text = book.Author?.DisplayName ?? "Неизвестен", Foreground = Brushes.LightGray, FontSize = 12 };
+            TextBlock genre = new TextBlock { Text = book.Genre ?? "", Foreground = Brushes.Gold, FontSize = 11 };
 
-            stack.Children.Add(cover);
-            stack.Children.Add(title);
-            stack.Children.Add(author);
+            panel.Children.Add(cover);
+            panel.Children.Add(title);
+            panel.Children.Add(author);
+            panel.Children.Add(genre);
 
-            border.Child = stack;
+            border.Child = panel;
 
-            border.MouseLeftButtonUp += (s, e) => NavigationService.Navigate(new BookDetailsPage(book));
+            ContextMenu menu = new ContextMenu();
+
+            menu.Items.Add(CreateMenuItem("📚 В планах", () => ChengeBookShelf(book.Id, "В планах")));
+            menu.Items.Add(CreateMenuItem("📖 Читаю", () => ChengeBookShelf(book.Id, "Читаю")));
+            menu.Items.Add(CreateMenuItem("✅ Прочитано", () => ChengeBookShelf(book.Id, "Прочитано")));
+            menu.Items.Add(CreateMenuItem("🗑 Заброшено", () => ChengeBookShelf(book.Id, "Заброшено")));
+
+            border.ContextMenu = menu;
+
+            // Открытие страницы книги по клику
+            border.MouseLeftButtonUp += (sender, e) =>
+            {
+                NavigationService.Navigate(new BookDetailsPage(book));
+            };
 
             return border;
         }
+        public void ChengeBookShelf(int bookId, string statusName)
+        {
+            bool success = App.DataService.AddBookToShelf(MainWindow.CurrentUser.Id, bookId, statusName);
 
-        private void BtnPlan_Click(object sender, RoutedEventArgs e) => LoadShelf("В планах");
-        private void BtnReading_Click(object sender, RoutedEventArgs e) => LoadShelf("Читаю");
-        private void BtnFinished_Click(object sender, RoutedEventArgs e) => LoadShelf("Прочитано");
-        private void BtnDropped_Click(object sender, RoutedEventArgs e) => LoadShelf("Заброшено");
+            if (success)
+            {
+                MessageBox.Show($"Книга пернесена в список: {statusName}", "Успешно");
+            }
+            else
+            {
+                MessageBox.Show("Не удалось пернесети книгу в список.", "Ошибка");
+            }
+            LoadCurrentShelf();
+        }
+        private MenuItem CreateMenuItem(string header, Action action)
+        {
+            MenuItem item = new MenuItem { Header = header };
+            item.Click += (s, e) => action();
+            return item;
+        }
+
+        // ================== КНОПКИ ФИЛЬТРАЦИИ ==================
+        private void BtnPlan_Click(object sender, RoutedEventArgs e) => ChangeShelf("В планах");
+        private void BtnReading_Click(object sender, RoutedEventArgs e) => ChangeShelf("Читаю");
+        private void BtnFinished_Click(object sender, RoutedEventArgs e) => ChangeShelf("Прочитано");
+        private void BtnDropped_Click(object sender, RoutedEventArgs e) => ChangeShelf("Заброшено");
+
+        private void ChangeShelf(string status)
+        {
+            currentStatus = status;
+            LoadCurrentShelf();
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using UP1.Models;
 using UP1.Services;
+using UP1.Windows;
 
 namespace UP1.Views
 {
@@ -9,6 +10,7 @@ namespace UP1.Views
         public AddBookWindow()
         {
             InitializeComponent();
+            txtAuthor.Text = MainWindow.CurrentUser.DisplayName.ToString();
         }
 
         private void BtnPublish_Click(object sender, RoutedEventArgs e)
@@ -21,9 +23,11 @@ namespace UP1.Views
 
             var newBook = new Book
             {
+                Author = MainWindow.CurrentUser,
                 Title = txtTitle.Text,
                 Description = txtDescription.Text,
                 Content = txtText.Text,
+                Genre = cmbGenre.Text,
                 CoverPath = "📖",
                 Rating = 0
             };

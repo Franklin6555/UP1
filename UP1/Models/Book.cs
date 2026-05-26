@@ -11,7 +11,7 @@ namespace UP1.Models
         public string CoverPath { get; set; }
         public string Content { get; set; }
 
-        public int AuthorId { get; set; }
+        public string Genre { get; set; }
         public virtual User Author { get; set; }
 
         public bool IsFrozen { get; set; } = false;

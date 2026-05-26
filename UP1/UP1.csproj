@@ -87,7 +87,6 @@
     <Compile Include="Models\Book.cs" />
     <Compile Include="Models\BookGenre.cs" />
     <Compile Include="Models\Complaint.cs" />
-    <Compile Include="Models\ComplaintType.cs" />
     <Compile Include="Models\Genre.cs" />
     <Compile Include="Models\ReadingStatus.cs" />
     <Compile Include="Models\RegisterResult.cs" />

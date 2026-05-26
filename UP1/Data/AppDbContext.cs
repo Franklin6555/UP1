@@ -14,6 +14,7 @@ namespace UP1.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<Book> Books { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<Complaint> Complaints { get; set; }
         public DbSet<UserBookList> UserBookLists { get; set; }
         public DbSet<ReadingStatus> ReadingStatuses { get; set; }
 

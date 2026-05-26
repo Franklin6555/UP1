@@ -14,13 +14,19 @@
             <TextBox x:Name="txtTitle" Height="35" Margin="0,0,0,15"/>
 
             <TextBlock Text="Жанр" Foreground="#AAAAAA" Margin="0,0,0,5"/>
-            <ComboBox x:Name="cmbGenre" Height="35" Margin="0,0,0,15"/>
+            <ComboBox x:Name="cmbGenre" Height="35" Margin="0,0,0,15">
+                <ComboBoxItem>Фантастика</ComboBoxItem>
+                <ComboBoxItem>Детектив</ComboBoxItem>
+                <ComboBoxItem>Романтика</ComboBoxItem>
+                <ComboBoxItem>Поэзия</ComboBoxItem>
+                <ComboBoxItem>Ужасы</ComboBoxItem>
+            </ComboBox>
 
             <TextBlock Text="Описание" Foreground="#AAAAAA" Margin="0,0,0,5"/>
-            <TextBox x:Name="txtDescription" Height="100" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,15"/>
+            <TextBox x:Name="txtDescription" Height="35" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,15"/>
 
             <TextBlock Text="Текст книги" Foreground="#AAAAAA" Margin="0,0,0,5"/>
-            <TextBox x:Name="txtText" Height="120" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,20"/>
+            <TextBox x:Name="txtText" Height="35" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,20"/>
 
             <Button Content="💾 Сохранить изменения" Height="50" FontSize="16" 
                     Background="#4CAF50" Foreground="White" Click="BtnSave_Click"/>

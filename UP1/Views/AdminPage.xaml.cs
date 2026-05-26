@@ -16,26 +16,97 @@ namespace UP1.Views
 
         private void LoadAllData()
         {
-            LoadUsers();
+            LoadActiveUsers();
+            LoadFrozenItems();
             LoadAuthorRequests();
+            LoadComplaints();
+        }
+        private void LoadComplaints()
+        {
+            if (lbComplaints == null) return;
+            lbComplaints.Items.Clear();
+
+            var complaints = App.DataService.GetAllComplaints();
+
+            foreach (var complaint in complaints)
+            {
+                string target = complaint.Book != null
+                    ? $"Книга: «{complaint.Book.Title}»"
+                    : "Другое";
+
+                var item = new ListBoxItem
+                {
+                    Content = $"От {complaint.User?.DisplayName ?? "Пользователь"}: {target}\n{complaint.Reason}",
+                    Tag = complaint.Id
+                };
+                lbComplaints.Items.Add(item);
+            }
+
+            if (complaints.Count == 0)
+            {
+                lbComplaints.Items.Add("Жалоб пока нет.");
+            }
         }
 
+        private void BtnResolveComplaint_Click(object sender, RoutedEventArgs e)
+        {
+            if (lbComplaints.SelectedItem == null || lbComplaints.SelectedItem is string)
+            {
+                MessageBox.Show("Выберите жалобу!", "Предупреждение");
+                return;
+            }
+
+            var selected = lbComplaints.SelectedItem as ListBoxItem;
+            int complaintId = (int)selected.Tag;
+
+            bool success = App.DataService.ResolveComplaint(complaintId);
+
+            if (success)
+            {
+                MessageBox.Show("Жалоба помечена как рассмотренная.", "Успешно");
+                LoadComplaints();
+            }
+        }
+
+        private void BtnRejectComplaint_Click(object sender, RoutedEventArgs e)
+        {
+            if (lbComplaints.SelectedItem == null || lbComplaints.SelectedItem is string)
+            {
+                MessageBox.Show("Выберите жалобу!", "Предупреждение");
+                return;
+            }
+
+            var selected = lbComplaints.SelectedItem as ListBoxItem;
+            int complaintId = (int)selected.Tag;
+
+            bool success = App.DataService.ResolveComplaint(complaintId); // можно сделать отдельный метод Reject
+
+            if (success)
+            {
+                MessageBox.Show("Жалоба отклонена.", "Отклонено");
+                LoadComplaints();
+            }
+        }
         // ПОЛЬЗОВАТЕЛИ
-        private void LoadUsers()
+        private void LoadActiveUsers()
         {
             if (lbUsers == null) return;
             lbUsers.Items.Clear();
 
-            var users = App.DataService.GetAllUsers();
+            var users = App.DataService.GetAllUsers()
+                .Where(u => !u.IsFrozen)        // ← фильтруем замороженных
+                .ToList();
 
             foreach (var user in users)
             {
                 string role = user.Role?.Name ?? "User";
-                lbUsers.Items.Add(new ListBoxItem
+
+                var item = new ListBoxItem
                 {
                     Content = $"{user.DisplayName} ({user.Login}) — {role}",
                     Tag = user.Id
-                });
+                };
+                lbUsers.Items.Add(item);
             }
         }
 
@@ -126,7 +197,7 @@ namespace UP1.Views
             if (success)
             {
                 MessageBox.Show($"Роль успешно изменена на {newRole}!", "Успешно");
-                LoadUsers();
+                LoadAllData();
             }
             else
             {
@@ -134,26 +205,107 @@ namespace UP1.Views
             }
         }
 
-        private void BtnResetPassword_Click(object sender, RoutedEventArgs e)
+        // ================== ЗАМОРОЗКА ПОЛЬЗОВАТЕЛЯ ==================
+        private void BtnFreezeUser_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Пароль успешно сброшен (прототип).", "Успешно");
-        }
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Пользователь заморожен (прототип).", "Успешно");
-        }
-        private void BtnUnfreeze_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Элемент разморожен (прототип).", "Успешно");
-        }
-        private void BtnReviewComplaint_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Жалоба рассмотрена.", "Готово");
+            if (lbUsers.SelectedItem == null)
+            {
+                MessageBox.Show("Выберите пользователя из списка!", "Предупреждение");
+                return;
+            }
+
+            var selectedItem = lbUsers.SelectedItem as ListBoxItem;
+            int userId = (int)selectedItem.Tag;
+
+            bool success = App.DataService.FreezeUser(userId, "Заморожен администратором");
+
+            if (success)
+            {
+                MessageBox.Show("Пользователь успешно заморожен!", "Успешно");
+                LoadAllData();
+            }
+            else
+            {
+                MessageBox.Show("Не удалось заморозить пользователя.", "Ошибка");
+            }
         }
 
-        private void BtnRejectComplaint_Click(object sender, RoutedEventArgs e)
+        private void LoadFrozenItems()
         {
-            MessageBox.Show("Жалоба отклонена.", "Отклонено");
+            if (lbFrozenItems == null) return;
+            lbFrozenItems.Items.Clear();
+
+            // Замороженные пользователи
+            var frozenUsers = App.DataService.GetFrozenUsers();
+            foreach (var user in frozenUsers)
+            {
+                var item = new ListBoxItem
+                {
+                    Content = $"👤 ПОЛЬЗОВАТЕЛЬ: {user.DisplayName} ({user.Login}) — {user.FreezeReason}",
+                    Tag = new FrozenItem { Type = "User", Id = user.Id }
+                };
+                lbFrozenItems.Items.Add(item);
+            }
+
+            // Замороженные книги
+            var frozenBooks = App.DataService.GetFrozenBooks();
+            foreach (var book in frozenBooks)
+            {
+                var item = new ListBoxItem
+                {
+                    Content = $"📖 КНИГА: «{book.Title}» — {book.Author?.DisplayName ?? "Неизвестен"}",
+                    Tag = new FrozenItem { Type = "Book", Id = book.Id }
+                };
+                lbFrozenItems.Items.Add(item);
+            }
+
+            if (lbFrozenItems.Items.Count == 0)
+            {
+                lbFrozenItems.Items.Add("Нет замороженных элементов.");
+            }
+        }
+
+        private void BtnUnfreeze_Click(object sender, RoutedEventArgs e)
+        {
+            if (lbFrozenItems.SelectedItem == null || lbFrozenItems.SelectedItem is string)
+            {
+                MessageBox.Show("Выберите элемент для разморозки!", "Предупреждение");
+                return;
+            }
+
+            var selected = lbFrozenItems.SelectedItem as ListBoxItem;
+            var frozenItem = selected.Tag as FrozenItem;
+
+            if (frozenItem == null) return;
+
+            bool success = false;
+            string message = "";
+
+            if (frozenItem.Type == "User")
+            {
+                success = App.DataService.UnfreezeUser(frozenItem.Id);
+                message = "Пользователь успешно разморожен!";
+            }
+            else if (frozenItem.Type == "Book")
+            {
+                success = App.DataService.UnfreezeBook(frozenItem.Id);
+                message = "Книга успешно разморожена!";
+            }
+
+            if (success)
+            {
+                MessageBox.Show(message, "Успешно");
+                LoadAllData(); // обновляем оба списка
+            }
+            else
+            {
+                MessageBox.Show("Не удалось разморозить элемент.", "Ошибка");
+            }
+        }
+        public class FrozenItem
+        {
+            public string Type { get; set; }  // "User" или "Book"
+            public int Id { get; set; }
         }
     }
 }
